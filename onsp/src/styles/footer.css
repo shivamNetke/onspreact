@@ -1,0 +1,105 @@
+/* ---------- GLOBAL SAFETY ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---------- FOOTER ---------- */
+
+.footer {
+  background-color:fff;
+  /* color: #fff; */
+  color: #54B7FF;
+  padding: 40px 0 0;
+  margin-top: 60px;
+  width: 100%;
+  border-top: 1px solid black;
+}
+
+/* Main container */
+.footer-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+/* Left section */
+.footer-details {
+  flex: 1;
+  min-width: 280px;
+}
+
+.footer-details h1 {
+  margin-bottom: 10px;
+  font-size: 24px;
+  letter-spacing: 4px;
+}
+
+.footer-details p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #54B7FF;
+}
+
+.footer-details a {
+  color: #54B7FF;
+  text-decoration: none;
+}
+
+.footer-details a:hover {
+  color: #54B7FF;
+  text-decoration: underline;
+}
+
+/* Follow section */
+.footer-follows {
+  min-width: 200px;
+}
+
+.footer-follows h2 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.footer-follows a {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.footer-follows img {
+  width: 32px;
+  height: 32px;
+  transition: transform 0.3s ease;
+}
+
+.footer-follows img:hover {
+  transform: scale(1.15);
+}
+
+/* Bottom copyright */
+.footer-bottom {
+  margin-top: 30px;
+  padding: 15px 0;
+  text-align: center;
+  /* border-top: 1px solid #333; */
+  font-size: 13px;
+  color: #75b9eb;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .footer-follows {
+    margin-top: 20px;
+  }
+}

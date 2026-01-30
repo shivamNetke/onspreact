@@ -1,0 +1,93 @@
+/* ---------- GLOBAL ---------- */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  /* background-color: #f5f7fa; */
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- PAGE ---------- */
+.loan-page {
+  min-height: 100vh;
+}
+
+/* ---------- HEADER ---------- */
+.loan-header {
+  text-align: center;
+  padding: 15px 10px;
+  background: linear-gradient(135deg, #54B7FF, #2f80ed);
+  color: #fff;
+  margin: 30px 90px;
+  border-radius: 10px;
+  height: 90px;
+}
+
+.loan-header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.loan-header p {
+  margin-top: 8px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+/* ---------- CONTAINER ---------- */
+.loan-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
+}
+
+/* ---------- CARD ---------- */
+.loan-card {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.loan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.loan-card h3 {
+  margin-bottom: 15px;
+  color: #222;
+  text-align: center;
+}
+
+/* ---------- LIST ---------- */
+.loan-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.loan-card li {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background-color: #f0f6ff;
+  border-left: 4px solid #54B7FF;
+  border-radius: 6px;
+  font-size: 14.5px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 600px) {
+  .loan-header h1 {
+    font-size: 24px;
+  }
+
+  .loan-card {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,82 @@
+/* ================= NAVBAR ================= */
+.navbar { 
+  /* background-color: #222; */
+  padding: 1px 30px;
+  width: 100%;                 /* ✅ REQUIRED */
+  border-bottom: 1px solid black;
+}
+
+.navbar-container {
+  max-width: 1300px;           /* ✅ keeps content centered */
+  margin: 0 auto;              /* ✅ centers container */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.company-name {
+  color: #54B7FF;
+  font-size: 22px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.navbar-nav {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
+  color: #54B7FF;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 10px 5px;           /* ✅ increase hover area */
+  display: inline-block;       /* ✅ REQUIRED for hover stability */
+}
+
+.nav-link:hover{
+  color: #54B7FF;
+}
+
+.nav-item {
+  position: relative;
+}
+
+/* ================= DROPDOWN ================= */
+/* 🔧 FIXED DROPDOWN WITH SMOOTH FADE */
+.dropdown-menu {
+  opacity: 0;                  /* start hidden */
+  visibility: hidden;          /* prevent interaction */
+  position: absolute;
+  top: 100%;                   /* ✅ attach directly under nav item */
+  left: 0;
+  margin-top: 6px;             /* ✅ small gap without hover loss */
+  background: #fff;
+  min-width: 150px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  z-index: 1000;               /* ✅ prevents hiding */
+  transition: opacity 0.4s ease, visibility 0.4s ease; /* smooth fade */
+}
+
+/* Keep dropdown open on hover */
+.dropdown:hover .dropdown-menu,
+.dropdown-menu:hover {
+  opacity: 1;
+  visibility: visible;
+
+}
+
+/* Dropdown options */
+.dropdown-option {
+  display: block;
+  padding: 10px;
+  text-decoration: none;
+  color: #54B7FF;
+}
+
+.dropdown-option:hover {
+  background-color: #f0f0f0;
+  color: #54B7FF;
+}

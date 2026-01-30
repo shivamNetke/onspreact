@@ -1,0 +1,105 @@
+/* loancalculator.css */
+
+:root {
+  --primary-blue: #1a73e8;
+  --bg-gray: #fdfdfd;
+  --border-gray: #dadce0;
+}
+
+.maindiv {
+  display: flex;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  align-items: flex-start;
+}
+
+/* 70% Width for Loan Details */
+.loanDetails {
+  flex: 7; 
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* 30% Width for Calculator */
+.loan-calculator {
+  flex: 3;
+  min-width: 280px; /* Prevents it from getting too squashed */
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-gray);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  height: 500px;
+}
+
+/* Form Styling */
+.loan-calculator label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #3c4043;
+}
+
+.loan-calculator input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border-gray);
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box; /* Crucial for small widths */
+}
+
+.loanDetails{
+    display: flex;
+}
+
+.loan-calculator input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+#btn {
+  width: 100%;
+  padding: 12px;
+  /* background-color: var(--primary-blue); */
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#btn:hover {
+  background-color: #000000dc;
+}
+
+/* Calculation Result Box */
+.loan-calculator p {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #202124;
+  line-height: 1.5;
+  border-left: 4px solid var(--primary-blue);
+}
+
+/* Responsive: Stack them on mobile */
+@media (max-width: 900px) {
+  .maindiv {
+    flex-direction: column;
+  }
+  .loanDetails, .loan-calculator {
+    flex: 1;
+    width: 100%;
+  }
+}

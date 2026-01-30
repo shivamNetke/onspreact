@@ -1,0 +1,76 @@
+/* ================= Our Values Section ================= */
+.core-values {
+  width: 95%;              /* almost full width */
+  max-width: 16000px;       /* allow wide desktops */
+  margin: 50px auto;
+  padding: 0 20px;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #222;
+}
+
+.core-values h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: black;
+}
+
+.core-values p {
+  font-size: 1.1rem;
+  margin-bottom: 50px;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* ================= Grid Layout for Values ================= */
+.values-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 cards in a row for large desktops */
+  gap: 30px;
+  justify-items: stretch; /* make cards stretch fully in each grid cell */
+}
+
+.value-item {
+  background-color: #d2e2f3;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 30px 20px;
+  width: 100%;              /* fill the grid cell */
+  text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.value-item h3 {
+  color: black;
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+}
+
+.value-item p {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Hover effect for cards */
+.value-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ================= Responsive ================= */
+@media (max-width: 1400px) {
+  .values-list {
+    grid-template-columns: repeat(2, 1fr); /* 2 cards per row for smaller desktops/tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .values-list {
+    grid-template-columns: 1fr; /* stack cards vertically on mobile */
+  }
+
+  .value-item {
+    padding: 25px 15px;
+  }
+}
