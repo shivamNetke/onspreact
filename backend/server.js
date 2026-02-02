@@ -9,12 +9,18 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ---------- Middleware ----------
-app.use(cors());
-app.use(bodyParser.json());
+/* -------------------- MIDDLEWARE -------------------- */
+
+// ✅ DEPLOYMENT SAFE CORS
+app.use(cors({
+  origin: "*", // later you can restrict to Netlify URL
+}));
+
+app.use(express.json()); // ✅ better than bodyParser alone
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// ---------- Nodemailer setup ----------
+/* -------------------- EMAIL SETUP -------------------- */
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -23,16 +29,23 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify email config at server start
-transporter.verify((error, success) => {
+/* ✅ DO NOT CRASH SERVER IF EMAIL FAILS */
+transporter.verify((error) => {
   if (error) {
-    console.error("❌ Email config error:", error);
+    console.error("❌ Email config error:", error.message);
   } else {
     console.log("✅ Email server is ready");
   }
 });
 
-// ---------- Route ----------
+/* -------------------- HEALTH CHECK (IMPORTANT) -------------------- */
+// ✅ REQUIRED FOR RENDER (prevents cold-start confusion)
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "Backend is running 🚀" });
+});
+
+/* -------------------- APPLY LOAN ROUTE -------------------- */
+
 app.post("/apply-loan", async (req, res) => {
   try {
     const {
@@ -46,7 +59,11 @@ app.post("/apply-loan", async (req, res) => {
       email,
     } = req.body;
 
-    // ---------- Save data locally ----------
+    // ✅ BASIC VALIDATION (DEPLOYMENT SAFE)
+    if (!email || !name || !loanoption) {
+      return res.status(400).json({ success: false, message: "Missing fields" });
+    }
+
     const loanData = {
       loanoption,
       name,
@@ -56,8 +73,10 @@ app.post("/apply-loan", async (req, res) => {
       mobileno,
       loantenure,
       email,
-      submittedAt: new Date().toLocaleString("en-IN", { hour12: false }),
+      submittedAt: new Date().toISOString(),
     };
+
+    /* -------------------- FILE STORAGE -------------------- */
 
     const filePath = path.join(__dirname, "loanApplications.json");
 
@@ -69,19 +88,17 @@ app.post("/apply-loan", async (req, res) => {
     existingData.push(loanData);
     fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
 
-    // ---------- Email content ----------
+    /* -------------------- EMAILS -------------------- */
+
     const mailToAdmin = {
       from: process.env.EMAIL_USER,
-      to: "netakeshivam@aca.edu.in",
+      to: process.env.EMAIL_USER, // ✅ safer than hardcoding
       subject: "New Loan Application Received",
       text: `
 Loan Option: ${loanoption}
 Name: ${name}
-Address: ${address}
-Pincode: ${pincode}
 Loan Amount: ₹${loanAmount}
 Mobile: ${mobileno}
-Tenure: ${loantenure} months
 Email: ${email}
 `,
     };
@@ -98,26 +115,30 @@ Loan Option: ${loanoption}
 Loan Amount: ₹${loanAmount}
 Tenure: ${loantenure} months
 
-This is a demo application.
+⚠️ This is a demo project.
 
 Regards,
 ONSP Bank`,
     };
 
-    // ---------- Send emails ----------
     await transporter.sendMail(mailToAdmin);
     await transporter.sendMail(mailToUser);
 
-    // ---------- Response ----------
-    res.status(200).json({ success: true, message: "Application submitted" });
+    /* -------------------- RESPONSE -------------------- */
+
+    res.status(200).json({
+      success: true,
+      message: "Application submitted successfully",
+    });
 
   } catch (error) {
-    console.error("❌ Apply-loan error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("❌ Apply-loan error:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 });
 
-// ---------- Start server ----------
+/* -------------------- START SERVER -------------------- */
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
