@@ -1,47 +1,49 @@
 require("dotenv").config();
 const express = require("express");
-const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
-const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* -------------------- MIDDLEWARE -------------------- */
 
-// ✅ DEPLOYMENT SAFE CORS
-app.use(cors({
-  origin: "*", // later you can restrict to Netlify URL
-}));
+app.use(cors({ origin: "*" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(express.json()); // ✅ better than bodyParser alone
-app.use(bodyParser.urlencoded({ extended: true }));
+/* -------------------- HEALTH CHECK (IMPORTANT) -------------------- */
 
-/* -------------------- EMAIL SETUP -------------------- */
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "Backend is running 🚀" });
+});
+
+/* -------------------- EMAIL TRANSPORTER -------------------- */
+/* ✅ THIS CONFIG WORKS ON RENDER */
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // TLS
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
-/* ✅ DO NOT CRASH SERVER IF EMAIL FAILS */
+/* ❗ DO NOT CRASH SERVER IF EMAIL FAILS */
+
 transporter.verify((error) => {
   if (error) {
     console.error("❌ Email config error:", error.message);
   } else {
     console.log("✅ Email server is ready");
   }
-});
-
-/* -------------------- HEALTH CHECK (IMPORTANT) -------------------- */
-// ✅ REQUIRED FOR RENDER (prevents cold-start confusion)
-app.get("/", (req, res) => {
-  res.status(200).json({ status: "Backend is running 🚀" });
 });
 
 /* -------------------- APPLY LOAN ROUTE -------------------- */
@@ -59,10 +61,16 @@ app.post("/apply-loan", async (req, res) => {
       email,
     } = req.body;
 
-    // ✅ BASIC VALIDATION (DEPLOYMENT SAFE)
-    if (!email || !name || !loanoption) {
-      return res.status(400).json({ success: false, message: "Missing fields" });
+    /* -------- BASIC VALIDATION -------- */
+
+    if (!loanoption || !name || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
     }
+
+    /* -------- SAVE TO FILE -------- */
 
     const loanData = {
       loanoption,
@@ -76,11 +84,9 @@ app.post("/apply-loan", async (req, res) => {
       submittedAt: new Date().toISOString(),
     };
 
-    /* -------------------- FILE STORAGE -------------------- */
-
     const filePath = path.join(__dirname, "loanApplications.json");
-
     let existingData = [];
+
     if (fs.existsSync(filePath)) {
       existingData = JSON.parse(fs.readFileSync(filePath, "utf-8") || "[]");
     }
@@ -88,11 +94,11 @@ app.post("/apply-loan", async (req, res) => {
     existingData.push(loanData);
     fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
 
-    /* -------------------- EMAILS -------------------- */
+    /* -------- EMAILS -------- */
 
-    const mailToAdmin = {
+    const adminMail = {
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // ✅ safer than hardcoding
+      to: process.env.EMAIL_USER,
       subject: "New Loan Application Received",
       text: `
 Loan Option: ${loanoption}
@@ -103,13 +109,13 @@ Email: ${email}
 `,
     };
 
-    const mailToUser = {
+    const userMail = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: "Loan Application Received – ONSP Bank",
       text: `Dear ${name},
 
-Thank you for applying for a loan with ONSP Bank.
+Your loan application has been successfully received.
 
 Loan Option: ${loanoption}
 Loan Amount: ₹${loanAmount}
@@ -121,19 +127,28 @@ Regards,
 ONSP Bank`,
     };
 
-    await transporter.sendMail(mailToAdmin);
-    await transporter.sendMail(mailToUser);
+    /* ❗ EMAIL FAIL SHOULD NOT BREAK APP */
 
-    /* -------------------- RESPONSE -------------------- */
+    try {
+      await transporter.sendMail(adminMail);
+      await transporter.sendMail(userMail);
+    } catch (mailError) {
+      console.error("❌ Email send failed:", mailError.message);
+    }
+
+    /* -------- RESPONSE -------- */
 
     res.status(200).json({
       success: true,
-      message: "Application submitted successfully",
+      message: "Loan application submitted successfully",
     });
 
   } catch (error) {
     console.error("❌ Apply-loan error:", error.message);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 });
 
