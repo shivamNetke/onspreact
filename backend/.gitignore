@@ -1,27 +1,57 @@
+# # Logs
+# logs
+# *.log
+# npm-debug.log*
+# yarn-debug.log*
+# yarn-error.log*
+# pnpm-debug.log*
+# lerna-debug.log*
+
+# # node_modules
+# # dist
+# dist-ssr
+# *.local
+
+# # Editor directories and files
+# .vscode/*
+# !.vscode/extensions.json
+# .idea
+# .DS_Store
+# *.suo
+# *.ntvs*
+# *.njsproj
+# *.sln
+# *.sw?
+# .env
+# node_modules
+# dist
+
 # Logs
-logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# node_modules
-# dist
-dist-ssr
-*.local
+# Dependencies
+node_modules/
 
-# Editor directories and files
+# Build / dist (जर backend मध्ये build असतील तर)
+dist/
+dist-ssr/
+
+# Environment variables (very important!)
+.env
+.env.local
+.env.*.local
+
+# Editor / OS files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+Thumbs.db
+
+# Temp files
+*.local
 *.sw?
-.env
-node_modules
-dist
