@@ -1,4 +1,4 @@
-import "../styles/loan.css";
+import "../styles/Loan.css";
 
 function Loan() {
   return (
