@@ -1,0 +1,4 @@
+[build]
+  base    = "frontend"      # frontend folder
+  command = "npm run build" # vite build
+  publish = "dist"          # output folder
