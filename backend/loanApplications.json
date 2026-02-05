@@ -53,5 +53,16 @@
     "loantenure": "12",
     "email": "netakeshivam@aca.edu.in",
     "submittedAt": "31/1/2026, 19:55:31"
+  },
+  {
+    "loanoption": "fdloan",
+    "name": "shivamNetke",
+    "address": "pim",
+    "pincode": "414141",
+    "loanAmount": "3241564",
+    "mobileno": "9881930329",
+    "loantenure": "88",
+    "email": "netkeshiv3521@gmail.com",
+    "submittedAt": "2026-02-05T06:46:24.283Z"
   }
 ]
