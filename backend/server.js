@@ -1,15 +1,9 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, '.env') });
 
-const path = require("path");  // हे पहिलं import करावं लागतं
-
-// dotenv ला path ची गरज आहे, म्हणून path आधी import केलं
-require("dotenv").config({ 
-  path: path.join(__dirname, '.env') 
-});
-
-// Debug logs - env load झाली का हे ताबडतोब दिसेल
+// Debug env load
 console.log("Current working directory:", process.cwd());
-console.log("EMAIL_USER from env:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS from env:", process.env.EMAIL_PASS ? "present (hidden)" : "MISSING");
+console.log("RESEND_API_KEY from env:", process.env.RESEND_API_KEY ? "present (hidden)" : "MISSING");
 
 const express = require("express");
 const nodemailer = require("nodemailer");
@@ -20,45 +14,36 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* -------------------- MIDDLEWARE -------------------- */
-
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* -------------------- HEALTH CHECK -------------------- */
-
 app.get("/", (req, res) => {
   res.status(200).json({ status: "Backend is running 🚀" });
 });
 
-/* -------------------- EMAIL TRANSPORTER -------------------- */
-
+/* -------------------- EMAIL TRANSPORTER (Resend) -------------------- */
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  // port: 587,
-  port: 465,
-  // secure: false, // TLS required for port 587
-  secure: true,
+  host: "smtp.resend.com",
+  port: 587,
+  secure: false, // TLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "resend",                    // हे fixed राहील
+    pass: process.env.RESEND_API_KEY,  // ← तुझा Resend API key
   },
-  // tls: {
-  //   rejectUnauthorized: false,
-  // },
 });
 
-/* Verify transporter on startup (very useful for debugging) */
+/* Verify transporter on startup */
 transporter.verify((error, success) => {
   if (error) {
     console.error("❌ Email config error (full):", error);
   } else {
-    console.log("✅ Email server is ready to send mails");
+    console.log("✅ Email server is ready to send mails (Resend)");
   }
 });
 
 /* -------------------- APPLY LOAN ROUTE -------------------- */
-
 app.post("/apply-loan", async (req, res) => {
   try {
     const {
@@ -105,8 +90,9 @@ app.post("/apply-loan", async (req, res) => {
 
     /* EMAILS */
     const adminMail = {
-      from: process.env.EMAIL_USER,
-      to: 'netakeshivam@aca.edu.in',
+      from: "ONSP Loan <onboarding@resend.dev>",  // Resend साठी from हे असावं (verified domain नसेल तर)
+      // to: "netakeshivam@aca.edu.in",              // तुझा receiving email
+      to: "netkeshiv3521@gmail.com",
       subject: "New Loan Application Received",
       text: `
 Loan Option: ${loanoption}
@@ -118,7 +104,7 @@ Email: ${email}
     };
 
     const userMail = {
-      from: process.env.EMAIL_USER,
+      from: "ONSP Loan <onboarding@resend.dev>",
       to: email,
       subject: "Loan Application Received – ONSP Bank",
       text: `Dear ${name},
@@ -135,14 +121,15 @@ Regards,
 ONSP Bank`,
     };
 
-    /* Send emails (fail-safe) */
+    /* Send emails with detailed logging */
     try {
-      await transporter.sendMail(adminMail);
-      await transporter.sendMail(userMail);
+      const adminInfo = await transporter.sendMail(adminMail);
+      const userInfo = await transporter.sendMail(userMail);
       console.log("Emails sent successfully");
+      console.log("Admin email message ID:", adminInfo.messageId);
+      console.log("User email message ID:", userInfo.messageId);
     } catch (mailError) {
-      console.error("❌ Email send failed:", mailError.message);
-      console.error("Full mail error:", mailError);
+      console.error("❌ Email send failed - full error:", mailError);
     }
 
     /* RESPONSE */
@@ -161,7 +148,6 @@ ONSP Bank`,
 });
 
 /* -------------------- START SERVER -------------------- */
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
