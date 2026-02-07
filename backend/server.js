@@ -1,187 +1,92 @@
-import "../styles/home.css";
-import Footer from "../components/Footer";
-import { useState } from "react";
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, '.env') });
 
-// Deployment साठी Render URL hardcode (env var नंतर remove करू शकतोस)
-const API_URL = "https://onspreact.onrender.com";  // ← हे temporary hardcode – env var काम करत नसल्यामुळे
+console.log("Current working directory:", process.cwd());
+console.log("RESEND_API_KEY from env:", process.env.RESEND_API_KEY ? "present (hidden)" : "MISSING");
 
-// Env var ची value काय आहे हे browser console मध्ये दाखव (debug साठी)
-console.log("Home.jsx loaded - Using API_URL:", API_URL);
+const express = require("express");
+const nodemailer = require("nodemailer");
+const cors = require("cors");
+const fs = require("fs");
 
-const Home = () => {
-  const [formData, setFormData] = useState({
-    loanoption: "",
-    name: "",
-    address: "",
-    pincode: "",
-    loanAmount: "",
-    email: "",
-    mobileno: "",
-    loantenure: "",
-  });
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+app.use(cors({ origin: "*" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "Backend is running 🚀" });
+});
 
-    const fullUrl = `${API_URL}/apply-loan`;
-    console.log("Submitting form to:", fullUrl); // ← हे दिसेल कुठे request जातंय
-    console.log("Form data:", formData);
+const transporter = nodemailer.createTransport({
+  host: "smtp.resend.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "resend",
+    pass: process.env.RESEND_API_KEY,
+  },
+});
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Email config error:", error);
+  } else {
+    console.log("Email server is ready");
+  }
+});
+
+app.post("/apply-loan", async (req, res) => {
+  try {
+    const { loanoption, name, address, pincode, loanAmount, mobileno, loantenure, email } = req.body;
+
+    if (!loanoption || !name || !email) {
+      return res.status(400).json({ success: false, message: "Required fields missing" });
+    }
+
+    const loanData = { loanoption, name, address, pincode, loanAmount, mobileno, loantenure, email, submittedAt: new Date().toISOString() };
+
+    const filePath = path.join(__dirname, "loanApplications.json");
+    let existingData = [];
+
+    if (fs.existsSync(filePath)) {
+      existingData = JSON.parse(fs.readFileSync(filePath, "utf-8") || "[]");
+    }
+
+    existingData.push(loanData);
+    fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2));
+
+    const adminMail = {
+      from: "ONSP Loan <onboarding@resend.dev>",
+      to: "netkeshiv3521@gmail.com",
+      subject: "New Loan Application Received",
+      text: `Loan Option: ${loanoption}\nName: ${name}\nLoan Amount: ₹${loanAmount}\nMobile: ${mobileno}\nEmail: ${email}`,
+    };
+
+    const userMail = {
+      from: "ONSP Loan <onboarding@resend.dev>",
+      to: "netkeshiv3521@gmail.com",
+      subject: "Loan Application Received – ONSP Bank",
+      text: `Dear ${name},\n\nYour loan application has been successfully received.\n\nLoan Option: ${loanoption}\nLoan Amount: ₹${loanAmount}\nTenure: ${loantenure} months\n\nRegards,\nONSP Bank`,
+    };
 
     try {
-      const res = await fetch(fullUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      console.log("Response status:", res.status);
-      console.log("Response ok:", res.ok);
-
-      if (!res.ok) {
-        let errorMessage = "Submission failed";
-        try {
-          const errorData = await res.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch (jsonErr) {
-          console.error("JSON parse error:", jsonErr);
-        }
-        throw new Error(errorMessage);
-      }
-
-      const data = await res.json();
-      console.log("Success response from backend:", data);
-
-      alert("Application submitted successfully ✅");
-
-      // Form reset
-      setFormData({
-        loanoption: "",
-        name: "",
-        address: "",
-        pincode: "",
-        loanAmount: "",
-        email: "",
-        mobileno: "",
-        loantenure: "",
-      });
-    } catch (err) {
-      console.error("Full submit error:", err);
-      alert(`Failed to submit application ❌\n${err.message}`);
+      await transporter.sendMail(adminMail);
+      await transporter.sendMail(userMail);
+      console.log("Emails sent successfully");
+    } catch (mailError) {
+      console.error("Email send failed:", mailError.message);
     }
-  };
 
-  return (
-    <>
-      <div className="form-wrapper">
-        <form className="form" onSubmit={handleSubmit}>
-          <h3>Fill details to apply for a loan</h3>
+    res.status(200).json({ success: true, message: "Loan application submitted successfully" });
+  } catch (error) {
+    console.error("Apply-loan error:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
-          <div className="form-row">
-            <select 
-              name="loanoption" 
-              value={formData.loanoption} 
-              required 
-              onChange={handleChange}
-            >
-              <option value="">SELECT LOAN</option>
-              <option value="personal loan">Personal Loan</option>
-              <option value="fdloan">FD Loan</option>
-              <option value="goldloan">Gold Loan</option>
-              <option value="vehicleloan">Vehicle Loan</option>
-            </select>
-
-            <input 
-              name="name" 
-              placeholder="Full name" 
-              value={formData.name}
-              required 
-              onChange={handleChange} 
-            />
-          </div>
-
-          <div className="form-row">
-            <input 
-              name="address" 
-              placeholder="Address" 
-              value={formData.address}
-              required 
-              onChange={handleChange} 
-            />
-            <input 
-              name="pincode" 
-              placeholder="Pincode" 
-              maxLength="6" 
-              value={formData.pincode}
-              required 
-              onChange={handleChange} 
-            />
-          </div>
-
-          <div className="form-row">
-            <input 
-              type="text" 
-              name="loanAmount" 
-              placeholder="Loan Amount" 
-              maxLength={7} 
-              value={formData.loanAmount}
-              required 
-              onChange={(e) => { 
-                e.target.value = e.target.value.replace(/[^0-9]/g, ""); 
-                handleChange(e); 
-              }} 
-            />
-            <input 
-              type="email" 
-              name="email" 
-              placeholder="Email" 
-              value={formData.email}
-              required 
-              onChange={handleChange} 
-            />
-          </div>
-
-          <div className="form-row">
-            <input 
-              type="text" 
-              name="mobileno" 
-              placeholder="Mobile" 
-              maxLength={10} 
-              value={formData.mobileno}
-              required 
-              onChange={(e) => { 
-                e.target.value = e.target.value.replace(/[^0-9]/g, ""); 
-                handleChange(e); 
-              }} 
-            />
-            <input 
-              type="text" 
-              name="loantenure" 
-              placeholder="Tenure (months)" 
-              maxLength={2} 
-              value={formData.loantenure}
-              required 
-              onChange={(e) => { 
-                e.target.value = e.target.value.replace(/[^0-9]/g, ""); 
-                handleChange(e); 
-              }} 
-            />
-          </div>
-
-          <div className="form-actions">
-            <button type="submit">Apply Now</button>
-          </div>
-        </form>
-      </div>
-
-      <Footer />
-    </>
-  );
-};
-
-export default Home;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
