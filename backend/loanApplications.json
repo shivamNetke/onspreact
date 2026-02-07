@@ -108,5 +108,16 @@
     "loantenure": "88",
     "email": "netkeshiv3521@gmail.com",
     "submittedAt": "2026-02-07T14:39:19.843Z"
+  },
+  {
+    "loanoption": "goldloan",
+    "name": "asdf",
+    "address": "nagar",
+    "pincode": "414001",
+    "loanAmount": "1212121",
+    "mobileno": "9881930329",
+    "loantenure": "88",
+    "email": "netkeshiv3521@gmail.com",
+    "submittedAt": "2026-02-07T14:46:54.247Z"
   }
 ]
