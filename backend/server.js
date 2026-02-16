@@ -1,6 +1,7 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, '.env') });
 
+// Debug env load
 console.log("Current working directory:", process.cwd());
 console.log("RESEND_API_KEY from env:", process.env.RESEND_API_KEY ? "present (hidden)" : "MISSING");
 
@@ -12,14 +13,17 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+/* -------------------- MIDDLEWARE -------------------- */
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* -------------------- HEALTH CHECK -------------------- */
 app.get("/", (req, res) => {
   res.status(200).json({ status: "Backend is running 🚀" });
 });
 
+/* -------------------- EMAIL TRANSPORTER (Resend) -------------------- */
 const transporter = nodemailer.createTransport({
   host: "smtp.resend.com",
   port: 587,
@@ -28,8 +32,13 @@ const transporter = nodemailer.createTransport({
     user: "resend",
     pass: process.env.RESEND_API_KEY,
   },
+  // Timeout settings वाढवले – Render wake-up delay कव्हर करेल
+  connectionTimeout: 120000,   // 120 सेकंद
+  greetingTimeout: 60000,      // 60 सेकंद
+  socketTimeout: 120000,       // 120 सेकंद
 });
 
+/* Verify transporter on startup */
 transporter.verify((error, success) => {
   if (error) {
     console.error("Email config error:", error);
@@ -38,6 +47,7 @@ transporter.verify((error, success) => {
   }
 });
 
+/* -------------------- APPLY LOAN ROUTE -------------------- */
 app.post("/apply-loan", async (req, res) => {
   try {
     const { loanoption, name, address, pincode, loanAmount, mobileno, loantenure, email } = req.body;
