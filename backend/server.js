@@ -32,8 +32,8 @@ const transporter = nodemailer.createTransport({
     user: "resend",
     pass: process.env.RESEND_API_KEY,
   },
-  // Timeout settings वाढवले – Render wake-up delay कव्हर करेल
-  connectionTimeout: 120000,   // 120 सेकंद
+  // Render free tier wake-up delay कव्हर करण्यासाठी timeout वाढवले
+  connectionTimeout: 120000,   // 120 सेकंद (default 30s)
   greetingTimeout: 60000,      // 60 सेकंद
   socketTimeout: 120000,       // 120 सेकंद
 });
