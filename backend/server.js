@@ -38,14 +38,14 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 120000,       // 120 सेकंद
 });
 
-/* Verify transporter on startup */
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("Email config error:", error);
-  } else {
-    console.log("Email server is ready");
-  }
-});
+/* Verify function comment out केलं – production मध्ये unnecessary error दिसू नये */
+// transporter.verify((error, success) => {
+//   if (error) {
+//     console.error("Email config error:", error);
+//   } else {
+//     console.log("Email server is ready");
+//   }
+// });
 
 /* -------------------- APPLY LOAN ROUTE -------------------- */
 app.post("/apply-loan", async (req, res) => {
@@ -56,7 +56,17 @@ app.post("/apply-loan", async (req, res) => {
       return res.status(400).json({ success: false, message: "Required fields missing" });
     }
 
-    const loanData = { loanoption, name, address, pincode, loanAmount, mobileno, loantenure, email, submittedAt: new Date().toISOString() };
+    const loanData = { 
+      loanoption, 
+      name, 
+      address, 
+      pincode, 
+      loanAmount, 
+      mobileno, 
+      loantenure, 
+      email, 
+      submittedAt: new Date().toISOString() 
+    };
 
     const filePath = path.join(__dirname, "loanApplications.json");
     let existingData = [];
@@ -70,24 +80,44 @@ app.post("/apply-loan", async (req, res) => {
 
     const adminMail = {
       from: "ONSP Loan <onboarding@resend.dev>",
-      to: "netkeshiv3521@gmail.com",
+      to: "netkeshiv3521@gmail.com",  // testing साठी तुझ्या email वर
       subject: "New Loan Application Received",
-      text: `Loan Option: ${loanoption}\nName: ${name}\nLoan Amount: ₹${loanAmount}\nMobile: ${mobileno}\nEmail: ${email}`,
+      text: `
+Loan Option: ${loanoption}
+Name: ${name}
+Loan Amount: ₹${loanAmount}
+Mobile: ${mobileno}
+Email: ${email}
+Submitted At: ${new Date().toISOString()}
+      `,
     };
 
     const userMail = {
       from: "ONSP Loan <onboarding@resend.dev>",
-      to: "netkeshiv3521@gmail.com",
+      to: "netkeshiv3521@gmail.com",  // testing साठी तुझ्या email वर
       subject: "Loan Application Received – ONSP Bank",
-      text: `Dear ${name},\n\nYour loan application has been successfully received.\n\nLoan Option: ${loanoption}\nLoan Amount: ₹${loanAmount}\nTenure: ${loantenure} months\n\nRegards,\nONSP Bank`,
+      text: `Dear ${name},
+
+Your loan application has been successfully received.
+
+Loan Option: ${loanoption}
+Loan Amount: ₹${loanAmount}
+Tenure: ${loantenure} months
+
+⚠️ This is a demo project.
+
+Regards,
+ONSP Bank`,
     };
 
     try {
-      await transporter.sendMail(adminMail);
-      await transporter.sendMail(userMail);
+      const adminInfo = await transporter.sendMail(adminMail);
+      const userInfo = await transporter.sendMail(userMail);
       console.log("Emails sent successfully");
+      console.log("Admin message ID:", adminInfo.messageId);
+      console.log("User message ID:", userInfo.messageId);
     } catch (mailError) {
-      console.error("Email send failed:", mailError.message);
+      console.error("Email send failed - full error:", mailError);
     }
 
     res.status(200).json({ success: true, message: "Loan application submitted successfully" });
