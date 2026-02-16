@@ -3,8 +3,8 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 console.log("Current working directory:", process.cwd());
 console.log(
-  "RESEND_API_KEY from env:",
-  process.env.RESEND_API_KEY ? "present (hidden)" : "MISSING"
+  "RESEND_API_KEYY from env:",
+  process.env.RESEND_API_KEYY ? "present (hidden)" : "MISSING"
 );
 
 const express = require("express");
@@ -12,7 +12,7 @@ const cors = require("cors");
 const fs = require("fs");
 const { Resend } = require("resend");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEYY);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
